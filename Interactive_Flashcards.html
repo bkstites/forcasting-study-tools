@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Forecasting Flashcards</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                max-width: 100%;
+                margin: 0;
+                border-radius: 10px;
+            }
+            
+            .card {
+                margin-bottom: 15px;
+                padding: 15px;
+            }
+            
+            .question, .answer {
+                font-size: 16px;
+                line-height: 1.4;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+            }
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .card-container {
+            padding: 30px;
+            min-height: 400px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 5px solid #3498db;
+        }
+        
+        .card.foundation {
+            border-left-color: #2c3e50;
+        }
+        
+        .card.regression {
+            border-left-color: #e74c3c;
+        }
+        
+        .card.accuracy {
+            border-left-color: #f39c12;
+        }
+        
+        .card.timeseries {
+            border-left-color: #27ae60;
+        }
+        
+        .card.applications {
+            border-left-color: #9b59b6;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card.flipped {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+        
+        .question {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .answer {
+            display: none;
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .answer.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            flex: 1;
+            margin: 0 20px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .confidence-rating {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .confidence-rating.show {
+            display: block;
+        }
+        
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .rating-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .rating-btn:hover {
+            background: #f57c00;
+            transform: scale(1.05);
+        }
+        
+        .rating-btn.selected {
+            background: #4CAF50;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Interactive Forecasting Flashcards</h1>
+            <p>Click cards to reveal answers • Rate your confidence • Track your progress</p>
+        </div>
+        
+        <div class="card-container">
+            <!-- FOUNDATION LEVEL: Basic Concepts -->
+            <div class="card foundation" onclick="flipCard(this)">
+                <div class="question">What is the primary purpose of forecasting in supply chain management?</div>
+                <div class="answer">
+                    <strong>Core Purpose:</strong> To predict future demand, enabling better planning for inventory, production, staffing, and resource allocation. Forecasting helps prevent stockouts, reduce excess inventory, and optimize capacity utilization.
+                    <br><br>
+                    <strong>Key Applications:</strong>
+                    • Inventory management (EOQ, safety stock)
+                    • Production planning (capacity, scheduling)
+                    • Staffing decisions (workforce planning)
+                    • Financial planning (budgets, cash flow)
+                    • Supplier coordination (procurement timing)
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Forecast = Future + Planning"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> All forecasting methods, accuracy measures, applications
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card foundation" onclick="flipCard(this)">
+                <div class="question">What are the two main categories of forecasting methods?</div>
+                <div class="answer">
+                    <strong>1. Quantitative Methods:</strong> Use mathematical models and historical data
+                    • Causal methods (Linear regression, Multiple regression)
+                    • Time series methods (Moving averages, Exponential smoothing, Trend projection)
+                    <br><br>
+                    <strong>2. Qualitative Methods:</strong> Use expert judgment and market research
+                    • Salesforce estimates
+                    • Executive opinion
+                    • Delphi method
+                    • Market research
+                    <br><br>
+                    <strong>When to Use:</strong>
+                    • Quantitative: When historical data is available and patterns are stable
+                    • Qualitative: When data is limited, new products, or major market changes
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Quant = Numbers, Qual = Judgment"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> All specific forecasting methods
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LINEAR REGRESSION LEVEL: Core Mathematical Foundation -->
+            <div class="card regression" onclick="flipCard(this)">
+                <div class="question">What is the general form of a simple linear regression equation?</div>
+                <div class="answer">
+                    <strong>Formula:</strong> Y = a + bX
+                    <br><br>
+                    <strong>Components:</strong>
+                    • Y = dependent variable (what we're predicting - demand, sales, etc.)
+                    • X = independent variable (what we're using to predict - time, price, etc.)
+                    • a = y-intercept (value of Y when X = 0)
+                    • b = slope (rate of change in Y for each unit change in X)
+                    <br><br>
+                    <strong>Example:</strong> If Y = 100 + 5X, then for every 1 unit increase in X, Y increases by 5 units
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Y = a + bX" (memorize this exact formula)
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Slope calculation, correlation, coefficient of determination
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card regression" onclick="flipCard(this)">
+                <div class="question">How do you calculate the slope (b) in linear regression?</div>
+                <div class="answer">
+                    <strong>Formula:</strong> b = [n(ΣXY) - (ΣX)(ΣY)] / [n(ΣX²) - (ΣX)²]
+                    <br><br>
+                    <strong>Step-by-Step:</strong>
+                    1. Calculate n (number of data points)
+                    2. Calculate ΣX (sum of X values)
+                    3. Calculate ΣY (sum of Y values)
+                    4. Calculate ΣXY (sum of X×Y products)
+                    5. Calculate ΣX² (sum of X squared values)
+                    6. Plug into formula
+                    <br><br>
+                    <strong>Example:</strong> If n=5, ΣX=15, ΣY=100, ΣXY=350, ΣX²=55
+                    Then b = [5(350) - (15)(100)] / [5(55) - (15)²] = [1750-1500] / [275-225] = 250/50 = 5
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Slope = Cross products minus products, divided by X squares minus X squared"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Y-intercept calculation, correlation coefficient
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ACCURACY MEASURES LEVEL: Performance Evaluation -->
+            <div class="card accuracy" onclick="flipCard(this)">
+                <div class="question">What is MAD and how do you interpret it?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> MAD = Mean Absolute Deviation = Average of absolute forecast errors
+                    <br><br>
+                    <strong>Formula:</strong> MAD = Σ|Actual - Forecast| / n
+                    <br><br>
+                    <strong>Step-by-Step:</strong>
+                    1. Calculate error for each period: |Actual - Forecast|
+                    2. Sum all absolute errors: Σ|Actual - Forecast|
+                    3. Divide by number of periods: / n
+                    <br><br>
+                    <strong>Example:</strong> If errors are 5, -3, 8, -2, 1
+                    Then MAD = (5 + 3 + 8 + 2 + 1) / 5 = 19/5 = 3.8
+                    <br><br>
+                    <strong>Interpretation:</strong> Lower MAD = better accuracy
+                    • MAD < 10% of average demand = Excellent
+                    • MAD 10-20% = Good
+                    • MAD > 20% = Poor
+                    <br><br>
+                    <strong>Memory Hook:</strong> "MAD = Mean Absolute Difference"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> MAPE, MSE, CFE calculations
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TIME SERIES LEVEL: Advanced Forecasting Methods -->
+            <div class="card timeseries" onclick="flipCard(this)">
+                <div class="question">What is exponential smoothing and how does α (alpha) affect it?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> Weighted average giving more weight to recent data, with weights decreasing exponentially
+                    <br><br>
+                    <strong>Formula:</strong> Ft+1 = αDt + (1-α)Ft
+                    <br><br>
+                    <strong>Components:</strong>
+                    • Ft+1 = Forecast for next period
+                    • α = Smoothing constant (0 < α < 1)
+                    • Dt = Actual demand for current period
+                    • Ft = Forecast for current period
+                    <br><br>
+                    <strong>Alpha Values:</strong>
+                    • α = 0.1-0.3 for stable demand (less responsive)
+                    • α = 0.4-0.6 for changing demand (moderate responsiveness)
+                    • α = 0.7-0.9 for highly variable demand (very responsive)
+                    <br><br>
+                    <strong>Example:</strong> If α=0.3, Dt=100, Ft=90
+                    Then Ft+1 = 0.3(100) + 0.7(90) = 30 + 63 = 93
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Alpha controls responsiveness"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Double exponential smoothing, seasonal methods
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- APPLICATIONS LEVEL: Real-World Implementation -->
+            <div class="card applications" onclick="flipCard(this)">
+                <div class="question">How do you calculate Economic Order Quantity (EOQ) and what factors affect it?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> EOQ is the optimal order quantity that minimizes total inventory costs
+                    <br><br>
+                    <strong>Formula:</strong> EOQ = √(2 × Annual Demand × Ordering Cost / Holding Cost)
+                    <br><br>
+                    <strong>Components:</strong>
+                    • Annual Demand (D) = Total units needed per year
+                    • Ordering Cost (S) = Cost per order (setup, paperwork, etc.)
+                    • Holding Cost (H) = Cost to hold one unit for one year
+                    <br><br>
+                    <strong>Example:</strong> If D=10,000, S=$50, H=$2
+                    Then EOQ = √(2 × 10,000 × 50 / 2) = √500,000 = 707 units
+                    <br><br>
+                    <strong>Factors Affecting EOQ:</strong>
+                    • Higher demand → Higher EOQ
+                    • Higher ordering costs → Higher EOQ
+                    • Higher holding costs → Lower EOQ
+                    <br><br>
+                    <strong>Memory Hook:</strong> "EOQ = Square root of 2DS over H"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Safety stock, reorder point calculations
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card applications" onclick="flipCard(this)">
+                <div class="question">What is the correlation coefficient (r) and how do you interpret it?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> Measures the strength and direction of linear relationship between two variables
+                    <br><br>
+                    <strong>Formula:</strong> r = [n(ΣXY) - (ΣX)(ΣY)] / √[(n(ΣX²) - (ΣX)²)(n(ΣY²) - (ΣY)²)]
+                    <br><br>
+                    <strong>Range:</strong> -1 ≤ r ≤ +1
+                    <br><br>
+                    <strong>Interpretation:</strong>
+                    • r = +1: Perfect positive correlation
+                    • r = 0.7 to 0.9: Strong positive correlation
+                    • r = 0.3 to 0.7: Moderate positive correlation
+                    • r = 0 to 0.3: Weak positive correlation
+                    • r = 0: No correlation
+                    • r = -0.3 to 0: Weak negative correlation
+                    • r = -0.7 to -0.3: Moderate negative correlation
+                    • r = -0.9 to -0.7: Strong negative correlation
+                    • r = -1: Perfect negative correlation
+                    <br><br>
+                    <strong>Example:</strong> If r = 0.85, there's a strong positive relationship
+                    <br><br>
+                    <strong>Memory Hook:</strong> "r = Relationship strength"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Coefficient of determination (r²)
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card applications" onclick="flipCard(this)">
+                <div class="question">What is MAPE and how does it differ from MAD?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> MAPE = Mean Absolute Percent Error = Average percentage error
+                    <br><br>
+                    <strong>Formula:</strong> MAPE = (Σ|Actual - Forecast|/Actual × 100) / n
+                    <br><br>
+                    <strong>Step-by-Step:</strong>
+                    1. Calculate percent error for each period: |Actual - Forecast|/Actual × 100
+                    2. Sum all percent errors: Σ|Actual - Forecast|/Actual × 100
+                    3. Divide by number of periods: / n
+                    <br><br>
+                    <strong>Example:</strong> If Actual=100, Forecast=90, then error = |100-90|/100 × 100 = 10%
+                    <br><br>
+                    <strong>MAPE vs MAD:</strong>
+                    • MAPE: Percentage-based, easier to compare across different products
+                    • MAD: Absolute units, shows actual error magnitude
+                    • MAPE: Better for products with different demand levels
+                    • MAD: Better for same product over time
+                    <br><br>
+                    <strong>Interpretation:</strong>
+                    • MAPE < 10% = Excellent
+                    • MAPE 10-20% = Good
+                    • MAPE > 20% = Poor
+                    <br><br>
+                    <strong>Memory Hook:</strong> "MAPE = Mean Absolute Percent Error"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> MSE, CFE, forecast accuracy comparison
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ADDITIONAL QUIZ COVERAGE CARDS -->
+            <div class="card regression" onclick="flipCard(this)">
+                <div class="question">What does the coefficient of determination (r²) represent?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> r² represents the proportion of variation in the dependent variable (Y) that is explained by the regression model
+                    <br><br>
+                    <strong>Formula:</strong> r² = (Explained Variation) / (Total Variation)
+                    <br><br>
+                    <strong>Range:</strong> 0 ≤ r² ≤ 1 (or 0% to 100%)
+                    <br><br>
+                    <strong>Interpretation:</strong>
+                    • r² = 0.90 (90%): 90% of variation in Y is explained by X
+                    • r² = 0.50 (50%): 50% of variation in Y is explained by X
+                    • r² = 0.10 (10%): Only 10% of variation in Y is explained by X
+                    <br><br>
+                    <strong>Example:</strong> If r² = 0.75, then 75% of the variation in demand is explained by the independent variable (like time or price)
+                    <br><br>
+                    <strong>Memory Hook:</strong> "r² = How much variation is explained"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Model evaluation, forecast confidence
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card timeseries" onclick="flipCard(this)">
+                <div class="question">When should you use a moving average forecasting method?</div>
+                <div class="answer">
+                    <strong>Best Use Cases:</strong> Moving averages work best for stable demand patterns with no clear trend or seasonality
+                    <br><br>
+                    <strong>Characteristics of Suitable Data:</strong>
+                    • Demand is relatively stable over time
+                    • No clear upward or downward trend
+                    • No strong seasonal patterns
+                    • Random fluctuations around a mean
+                    <br><br>
+                    <strong>When NOT to Use:</strong>
+                    • Clear trend (increasing or decreasing)
+                    • Strong seasonality
+                    • New products with limited history
+                    • Highly variable demand
+                    <br><br>
+                    <strong>Example:</strong> Monthly utility bills, basic office supplies, stable consumer goods
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Moving Average = Stable, No Trend"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Exponential smoothing, trend analysis
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card timeseries" onclick="flipCard(this)">
+                <div class="question">What is a seasonal factor in seasonal forecasting?</div>
+                <div class="answer">
+                    <strong>Definition:</strong> A seasonal factor is the ratio of actual seasonal demand to the average demand per season
+                    <br><br>
+                    <strong>Formula:</strong> Seasonal Factor = (Actual Seasonal Demand) / (Average Demand)
+                    <br><br>
+                    <strong>Calculation Steps:</strong>
+                    1. Calculate average demand across all seasons
+                    2. For each season, divide actual demand by average
+                    3. Seasonal factors should average to 1.0
+                    <br><br>
+                    <strong>Example:</strong> If average monthly demand is 100 units:
+                    • January: 80 units → Seasonal factor = 80/100 = 0.8
+                    • December: 150 units → Seasonal factor = 150/100 = 1.5
+                    <br><br>
+                    <strong>Interpretation:</strong>
+                    • Factor > 1.0: Above average demand
+                    • Factor < 1.0: Below average demand
+                    • Factor = 1.0: Average demand
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Seasonal Factor = Actual / Average"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Seasonal adjustment, multiplicative methods
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card timeseries" onclick="flipCard(this)">
+                <div class="question">What is the relationship between α and n in exponential smoothing vs. moving averages?</div>
+                <div class="answer">
+                    <strong>Approximate Relationship:</strong> α ≈ 2/(n+1)
+                    <br><br>
+                    <strong>Where:</strong>
+                    • α = smoothing constant in exponential smoothing
+                    • n = number of periods in moving average
+                    <br><br>
+                    <strong>Examples:</strong>
+                    • n=3 (3-period MA) → α ≈ 2/(3+1) = 0.5
+                    • n=5 (5-period MA) → α ≈ 2/(5+1) = 0.33
+                    • n=10 (10-period MA) → α ≈ 2/(10+1) = 0.18
+                    <br><br>
+                    <strong>Interpretation:</strong>
+                    • Higher n (more periods) → Lower α (less responsive)
+                    • Lower n (fewer periods) → Higher α (more responsive)
+                    <br><br>
+                    <strong>Memory Hook:</strong> "Alpha = 2 over n plus 1"
+                    <br><br>
+                    <strong>Prerequisite for:</strong> Method selection, parameter tuning
+                </div>
+                <div class="confidence-rating">
+                    <p><strong>Rate your confidence (1-5):</strong></p>
+                    <div class="rating-buttons">
+                        <button class="rating-btn" onclick="rateConfidence(1)">1 - Poor</button>
+                        <button class="rating-btn" onclick="rateConfidence(2)">2 - Fair</button>
+                        <button class="rating-btn" onclick="rateConfidence(3)">3 - Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(4)">4 - Very Good</button>
+                        <button class="rating-btn" onclick="rateConfidence(5)">5 - Excellent</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="previousCard()" id="prevBtn">← Previous</button>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <button class="btn" onclick="nextCard()" id="nextBtn">Next →</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="cardsStudied">0</div>
+                <div class="stat-label">Cards Studied</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgConfidence">0</div>
+                <div class="stat-label">Avg Confidence</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="masteryLevel">0%</div>
+                <div class="stat-label">Mastery Level</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCardIndex = 0;
+        let cardsStudied = 0;
+        let totalConfidence = 0;
+        let confidenceCount = 0;
+        let streak = parseInt(localStorage.getItem('streak') || '0');
+        
+        const cards = document.querySelectorAll('.card');
+        const progressBar = document.getElementById('progressBar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        function flipCard(card) {
+            const answer = card.querySelector('.answer');
+            const confidenceRating = card.querySelector('.confidence-rating');
+            
+            if (answer.classList.contains('show')) {
+                answer.classList.remove('show');
+                confidenceRating.classList.remove('show');
+            } else {
+                answer.classList.add('show');
+                confidenceRating.classList.add('show');
+                
+                if (!card.classList.contains('studied')) {
+                    cardsStudied++;
+                    card.classList.add('studied');
+                    updateStats();
+                }
+            }
+        }
+        
+        function rateConfidence(rating) {
+            totalConfidence += rating;
+            confidenceCount++;
+            
+            // Remove selected class from all buttons
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            event.target.classList.add('selected');
+            
+            updateStats();
+        }
+        
+        function updateStats() {
+            document.getElementById('cardsStudied').textContent = cardsStudied;
+            document.getElementById('avgConfidence').textContent = confidenceCount > 0 ? 
+                (totalConfidence / confidenceCount).toFixed(1) : '0';
+            
+            const masteryLevel = Math.min(100, (cardsStudied / cards.length) * 100);
+            document.getElementById('masteryLevel').textContent = Math.round(masteryLevel) + '%';
+            
+            document.getElementById('streak').textContent = streak;
+            
+            // Update progress bar
+            const progress = (currentCardIndex + 1) / cards.length * 100;
+            progressBar.style.width = progress + '%';
+            
+            // Update button states
+            prevBtn.disabled = currentCardIndex === 0;
+            nextBtn.disabled = currentCardIndex === cards.length - 1;
+        }
+        
+        function nextCard() {
+            if (currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+                showCard(currentCardIndex);
+            }
+        }
+        
+        function previousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                showCard(currentCardIndex);
+            }
+        }
+        
+        function showCard(index) {
+            cards.forEach((card, i) => {
+                if (i === index) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            updateStats();
+        }
+        
+        // Initialize
+        showCard(0);
+        updateStats();
+        
+        // Save streak to localStorage
+        localStorage.setItem('streak', streak.toString());
+    </script>
+</body>
+</html>

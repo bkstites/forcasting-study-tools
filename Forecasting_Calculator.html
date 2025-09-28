@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Forecasting Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .results-section {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #2196F3;
+        }
+        
+        .method-selector {
+            margin-bottom: 20px;
+        }
+        
+        .method-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            background: #e9ecef;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .tab:hover {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .data-table input {
+            width: 80px;
+            border: none;
+            text-align: center;
+            background: transparent;
+        }
+        
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .btn.secondary {
+            background: #2196F3;
+        }
+        
+        .btn.secondary:hover {
+            background: #1976D2;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .result-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .result-value {
+            font-size: 18px;
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        .formula-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #f44336;
+        }
+        
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Interactive Forecasting Calculator</h1>
+            <p>Calculate forecasts using multiple methods • Visualize results • Learn as you go</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <div class="method-selector">
+                    <h3>Select Forecasting Method</h3>
+                    <div class="method-tabs">
+                        <button class="tab active" onclick="switchMethod('regression')">Linear Regression</button>
+                        <button class="tab" onclick="switchMethod('moving')">Moving Average</button>
+                        <button class="tab" onclick="switchMethod('exponential')">Exponential Smoothing</button>
+                        <button class="tab" onclick="switchMethod('seasonal')">Seasonal</button>
+                    </div>
+                </div>
+                
+                <div id="regression-inputs" class="method-inputs">
+                    <h4>Linear Regression Data</h4>
+                    <div class="input-group">
+                        <label>Number of data points:</label>
+                        <input type="number" id="regression-n" value="5" min="2" max="20">
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Point</th>
+                                <th>X Value</th>
+                                <th>Y Value</th>
+                                <th>XY</th>
+                                <th>X²</th>
+                            </tr>
+                        </thead>
+                        <tbody id="regression-table">
+                            <tr>
+                                <td>1</td>
+                                <td><input type="number" class="x-value" value="1"></td>
+                                <td><input type="number" class="y-value" value="10"></td>
+                                <td class="xy-value">10</td>
+                                <td class="x2-value">1</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><input type="number" class="x-value" value="2"></td>
+                                <td><input type="number" class="y-value" value="15"></td>
+                                <td class="xy-value">30</td>
+                                <td class="x2-value">4</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><input type="number" class="x-value" value="3"></td>
+                                <td><input type="number" class="y-value" value="20"></td>
+                                <td class="xy-value">60</td>
+                                <td class="x2-value">9</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><input type="number" class="x-value" value="4"></td>
+                                <td><input type="number" class="y-value" value="25"></td>
+                                <td class="xy-value">100</td>
+                                <td class="x2-value">16</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><input type="number" class="x-value" value="5"></td>
+                                <td><input type="number" class="y-value" value="30"></td>
+                                <td class="xy-value">150</td>
+                                <td class="x2-value">25</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="input-group">
+                        <label>Forecast for X = </label>
+                        <input type="number" id="regression-forecast-x" value="6">
+                    </div>
+                    
+                    <button class="btn" onclick="calculateRegression()">Calculate Regression</button>
+                    <button class="btn secondary" onclick="updateRegressionTable()">Update Table</button>
+                </div>
+                
+                <div id="moving-inputs" class="method-inputs" style="display: none;">
+                    <h4>Moving Average Data</h4>
+                    <div class="input-group">
+                        <label>Number of periods:</label>
+                        <input type="number" id="moving-periods" value="3" min="2" max="10">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Historical Data (comma-separated):</label>
+                        <input type="text" id="moving-data" value="10,15,20,25,30,35,40">
+                    </div>
+                    
+                    <button class="btn" onclick="calculateMovingAverage()">Calculate Moving Average</button>
+                </div>
+                
+                <div id="exponential-inputs" class="method-inputs" style="display: none;">
+                    <h4>Exponential Smoothing Data</h4>
+                    <div class="input-group">
+                        <label>Alpha (α) value:</label>
+                        <input type="number" id="exponential-alpha" value="0.3" min="0.1" max="0.9" step="0.1">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Initial Forecast:</label>
+                        <input type="number" id="exponential-initial" value="20">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Historical Data (comma-separated):</label>
+                        <input type="text" id="exponential-data" value="22,25,23,27,30,28,32">
+                    </div>
+                    
+                    <button class="btn" onclick="calculateExponentialSmoothing()">Calculate Exponential Smoothing</button>
+                </div>
+                
+                <div id="seasonal-inputs" class="method-inputs" style="display: none;">
+                    <h4>Seasonal Forecasting Data</h4>
+                    <div class="input-group">
+                        <label>Number of seasons per year:</label>
+                        <input type="number" id="seasonal-seasons" value="4" min="2" max="12">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Number of years of data:</label>
+                        <input type="number" id="seasonal-years" value="2" min="2" max="5">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Expected total for forecast year:</label>
+                        <input type="number" id="seasonal-total" value="1000">
+                    </div>
+                    
+                    <button class="btn" onclick="calculateSeasonal()">Calculate Seasonal Forecast</button>
+                </div>
+            </div>
+            
+            <div class="results-section">
+                <h3>Results & Analysis</h3>
+                <div id="results-container">
+                    <div class="result-card">
+                        <div class="result-title">Select a method and enter data to see results</div>
+                        <div class="result-value">Ready to calculate!</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h4>Visualization</h4>
+                    <div id="chart-placeholder">
+                        <p>Chart will appear here after calculation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMethod = 'regression';
+        
+        function switchMethod(method) {
+            currentMethod = method;
+            
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show/hide input sections
+            document.querySelectorAll('.method-inputs').forEach(input => {
+                input.style.display = 'none';
+            });
+            document.getElementById(method + '-inputs').style.display = 'block';
+            
+            // Clear results
+            document.getElementById('results-container').innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">Select a method and enter data to see results</div>
+                    <div class="result-value">Ready to calculate!</div>
+                </div>
+            `;
+        }
+        
+        function updateRegressionTable() {
+            const n = parseInt(document.getElementById('regression-n').value);
+            const tableBody = document.getElementById('regression-table');
+            
+            tableBody.innerHTML = '';
+            for (let i = 1; i <= n; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td><input type="number" class="x-value" value="${i}" onchange="updateRowCalculations(this)"></td>
+                    <td><input type="number" class="y-value" value="${10 + i * 5}" onchange="updateRowCalculations(this)"></td>
+                    <td class="xy-value">${i * (10 + i * 5)}</td>
+                    <td class="x2-value">${i * i}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+        
+        function updateRowCalculations(input) {
+            const row = input.parentElement.parentElement;
+            const xValue = parseFloat(row.querySelector('.x-value').value) || 0;
+            const yValue = parseFloat(row.querySelector('.y-value').value) || 0;
+            
+            row.querySelector('.xy-value').textContent = (xValue * yValue).toFixed(2);
+            row.querySelector('.x2-value').textContent = (xValue * xValue).toFixed(2);
+        }
+        
+        function calculateRegression() {
+            const tableRows = document.querySelectorAll('#regression-table tr');
+            const n = tableRows.length;
+            
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+            
+            tableRows.forEach(row => {
+                const x = parseFloat(row.querySelector('.x-value').value) || 0;
+                const y = parseFloat(row.querySelector('.y-value').value) || 0;
+                
+                sumX += x;
+                sumY += y;
+                sumXY += x * y;
+                sumX2 += x * x;
+                sumY2 += y * y;
+            });
+            
+            // Calculate slope and intercept
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            // Calculate correlation coefficient
+            const correlation = (n * sumXY - sumX * sumY) / 
+                Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            
+            // Calculate coefficient of determination
+            const rSquared = correlation * correlation;
+            
+            // Forecast
+            const forecastX = parseFloat(document.getElementById('regression-forecast-x').value);
+            const forecastY = intercept + slope * forecastX;
+            
+            // Display results
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">Regression Equation</div>
+                    <div class="formula-display">Y = ${intercept.toFixed(3)} + ${slope.toFixed(3)}X</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Slope (b)</div>
+                    <div class="result-value">${slope.toFixed(3)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Y-Intercept (a)</div>
+                    <div class="result-value">${intercept.toFixed(3)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Correlation Coefficient (r)</div>
+                    <div class="result-value">${correlation.toFixed(3)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Coefficient of Determination (r²)</div>
+                    <div class="result-value">${(rSquared * 100).toFixed(1)}%</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Forecast for X = ${forecastX}</div>
+                    <div class="result-value">${forecastY.toFixed(2)}</div>
+                </div>
+                
+                <div class="success-message">
+                    <strong>Interpretation:</strong> ${getCorrelationInterpretation(correlation)} ${getRSquaredInterpretation(rSquared)}
+                </div>
+            `;
+        }
+        
+        function calculateMovingAverage() {
+            const periods = parseInt(document.getElementById('moving-periods').value);
+            const dataString = document.getElementById('moving-data').value;
+            const data = dataString.split(',').map(x => parseFloat(x.trim()));
+            
+            if (data.length < periods) {
+                showError('Not enough data points for the selected period length.');
+                return;
+            }
+            
+            let forecasts = [];
+            let errors = [];
+            
+            for (let i = periods; i < data.length; i++) {
+                const sum = data.slice(i - periods, i).reduce((a, b) => a + b, 0);
+                const forecast = sum / periods;
+                const error = Math.abs(data[i] - forecast);
+                
+                forecasts.push(forecast);
+                errors.push(error);
+            }
+            
+            const mad = errors.reduce((a, b) => a + b, 0) / errors.length;
+            const nextForecast = data.slice(-periods).reduce((a, b) => a + b, 0) / periods;
+            
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">Moving Average Period</div>
+                    <div class="result-value">${periods} periods</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">MAD (Mean Absolute Deviation)</div>
+                    <div class="result-value">${mad.toFixed(2)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Next Period Forecast</div>
+                    <div class="result-value">${nextForecast.toFixed(2)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Forecast History</div>
+                    <div class="formula-display">${forecasts.map(f => f.toFixed(2)).join(', ')}</div>
+                </div>
+                
+                <div class="success-message">
+                    <strong>Interpretation:</strong> Lower MAD indicates better forecast accuracy. 
+                    This method works best for stable demand patterns.
+                </div>
+            `;
+        }
+        
+        function calculateExponentialSmoothing() {
+            const alpha = parseFloat(document.getElementById('exponential-alpha').value);
+            const initialForecast = parseFloat(document.getElementById('exponential-initial').value);
+            const dataString = document.getElementById('exponential-data').value;
+            const data = dataString.split(',').map(x => parseFloat(x.trim()));
+            
+            let forecasts = [initialForecast];
+            let errors = [];
+            
+            for (let i = 0; i < data.length; i++) {
+                const forecast = alpha * data[i] + (1 - alpha) * forecasts[i];
+                const error = Math.abs(data[i] - forecasts[i]);
+                
+                forecasts.push(forecast);
+                errors.push(error);
+            }
+            
+            const mad = errors.reduce((a, b) => a + b, 0) / errors.length;
+            const nextForecast = forecasts[forecasts.length - 1];
+            
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">Alpha (α) Value</div>
+                    <div class="result-value">${alpha}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">MAD (Mean Absolute Deviation)</div>
+                    <div class="result-value">${mad.toFixed(2)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Next Period Forecast</div>
+                    <div class="result-value">${nextForecast.toFixed(2)}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Forecast History</div>
+                    <div class="formula-display">${forecasts.slice(1).map(f => f.toFixed(2)).join(', ')}</div>
+                </div>
+                
+                <div class="success-message">
+                    <strong>Interpretation:</strong> Higher alpha values make forecasts more responsive to recent changes. 
+                    Lower alpha values provide more stable forecasts.
+                </div>
+            `;
+        }
+        
+        function calculateSeasonal() {
+            const seasons = parseInt(document.getElementById('seasonal-seasons').value);
+            const years = parseInt(document.getElementById('seasonal-years').value);
+            const expectedTotal = parseFloat(document.getElementById('seasonal-total').value);
+            
+            // For demo purposes, create sample seasonal data
+            const sampleData = generateSampleSeasonalData(seasons, years);
+            const seasonalFactors = calculateSeasonalFactors(sampleData, seasons, years);
+            const forecasts = calculateSeasonalForecasts(seasonalFactors, expectedTotal, seasons);
+            
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">Number of Seasons</div>
+                    <div class="result-value">${seasons}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Expected Annual Total</div>
+                    <div class="result-value">${expectedTotal}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Seasonal Forecasts</div>
+                    <div class="formula-display">${forecasts.map(f => f.toFixed(1)).join(', ')}</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Seasonal Factors</div>
+                    <div class="formula-display">${seasonalFactors.map(f => f.toFixed(3)).join(', ')}</div>
+                </div>
+                
+                <div class="success-message">
+                    <strong>Interpretation:</strong> Seasonal factors show how each season compares to the average. 
+                    Values above 1.0 indicate above-average demand, below 1.0 indicate below-average demand.
+                </div>
+            `;
+        }
+        
+        function generateSampleSeasonalData(seasons, years) {
+            const data = [];
+            for (let year = 0; year < years; year++) {
+                for (let season = 0; season < seasons; season++) {
+                    // Create realistic seasonal pattern
+                    let baseValue = 100;
+                    if (season === 1) baseValue = 150; // Peak season
+                    else if (season === 2) baseValue = 120; // High season
+                    else if (season === 3) baseValue = 80; // Low season
+                    
+                    data.push(baseValue + Math.random() * 20 - 10);
+                }
+            }
+            return data;
+        }
+        
+        function calculateSeasonalFactors(data, seasons, years) {
+            const factors = [];
+            
+            for (let season = 0; season < seasons; season++) {
+                let seasonSum = 0;
+                let yearAverages = [];
+                
+                // Calculate year averages
+                for (let year = 0; year < years; year++) {
+                    const yearData = data.slice(year * seasons, (year + 1) * seasons);
+                    const yearAverage = yearData.reduce((a, b) => a + b, 0) / seasons;
+                    yearAverages.push(yearAverage);
+                }
+                
+                // Calculate seasonal factors for this season
+                for (let year = 0; year < years; year++) {
+                    const seasonValue = data[year * seasons + season];
+                    const factor = seasonValue / yearAverages[year];
+                    seasonSum += factor;
+                }
+                
+                factors.push(seasonSum / years);
+            }
+            
+            return factors;
+        }
+        
+        function calculateSeasonalForecasts(factors, total, seasons) {
+            const averagePerSeason = total / seasons;
+            return factors.map(factor => averagePerSeason * factor);
+        }
+        
+        function getCorrelationInterpretation(r) {
+            const absR = Math.abs(r);
+            if (absR >= 0.9) return "Very strong correlation.";
+            if (absR >= 0.7) return "Strong correlation.";
+            if (absR >= 0.5) return "Moderate correlation.";
+            if (absR >= 0.3) return "Weak correlation.";
+            return "Very weak correlation.";
+        }
+        
+        function getRSquaredInterpretation(r2) {
+            const percentage = r2 * 100;
+            return `${percentage.toFixed(1)}% of the variation in Y is explained by the regression model.`;
+        }
+        
+        function showError(message) {
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+        
+        // Initialize
+        updateRegressionTable();
+    </script>
+</body>
+</html>

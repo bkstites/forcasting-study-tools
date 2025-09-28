@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Forecasting Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .quiz-container {
+            padding: 30px;
+        }
+        
+        .question-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .question-card.active {
+            border-color: #2196F3;
+            background: #e3f2fd;
+        }
+        
+        .question-card.completed {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        
+        .question-number {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .option {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .option:hover {
+            border-color: #2196F3;
+            background: #f8f9fa;
+        }
+        
+        .option.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        
+        .option.correct {
+            border-color: #4CAF50;
+            background: #c8e6c9;
+        }
+        
+        .option.incorrect {
+            border-color: #f44336;
+            background: #ffcdd2;
+        }
+        
+        .option input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.submit {
+            background: #4CAF50;
+        }
+        
+        .btn.submit:hover {
+            background: #45a049;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            flex: 1;
+            margin: 0 20px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .score-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .feedback {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .question-review {
+            margin-top: 20px;
+            text-align: left;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .review-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .review-item.correct {
+            border-left-color: #27ae60;
+        }
+        
+        .review-item.incorrect {
+            border-left-color: #e74c3c;
+        }
+        
+        .question-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .question-text p {
+            margin: 0;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .answer-comparison {
+            margin-bottom: 15px;
+        }
+        
+        .answer-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        
+        .answer-label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 120px;
+            margin-right: 15px;
+        }
+        
+        .answer-value {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .answer-value.correct {
+            color: #27ae60;
+        }
+        
+        .answer-value.incorrect {
+            color: #e74c3c;
+        }
+        
+        .explanation {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .explanation p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timer {
+            background: #ff9800;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .timer.warning {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Interactive Forecasting Quiz</h1>
+            <p>Test your knowledge • Track your progress • Master forecasting</p>
+            <div class="timer" id="timer">Time: 10:00</div>
+        </div>
+        
+        <div class="quiz-container" id="quizContainer">
+            <div class="question-card active" data-question="0">
+                <div class="question-number">Question 1 of 10</div>
+                <div class="question-text">What is the primary purpose of forecasting in supply chain management?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q1" value="a">
+                        <span>A) To reduce costs</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q1" value="b">
+                        <span>B) To predict future demand for planning</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q1" value="c">
+                        <span>C) To increase sales</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q1" value="d">
+                        <span>D) To manage employees</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="1">
+                <div class="question-number">Question 2 of 10</div>
+                <div class="question-text">What is the general form of a simple linear regression equation?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q2" value="a">
+                        <span>A) Y = a + bX</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q2" value="b">
+                        <span>B) Y = b + aX</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q2" value="c">
+                        <span>C) X = a + bY</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q2" value="d">
+                        <span>D) Y = a - bX</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="2">
+                <div class="question-number">Question 3 of 10</div>
+                <div class="question-text">What does MAD stand for in forecasting accuracy measurement?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q3" value="a">
+                        <span>A) Mean Absolute Deviation</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q3" value="b">
+                        <span>B) Maximum Absolute Difference</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q3" value="c">
+                        <span>C) Mean Average Difference</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q3" value="d">
+                        <span>D) Maximum Average Deviation</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="3">
+                <div class="question-number">Question 4 of 10</div>
+                <div class="question-text">In exponential smoothing, what does α (alpha) represent?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q4" value="a">
+                        <span>A) The y-intercept</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q4" value="b">
+                        <span>B) The smoothing constant</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q4" value="c">
+                        <span>C) The correlation coefficient</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q4" value="d">
+                        <span>D) The standard deviation</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="4">
+                <div class="question-number">Question 5 of 10</div>
+                <div class="question-text">What is the range of the correlation coefficient (r)?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q5" value="a">
+                        <span>A) 0 to 1</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q5" value="b">
+                        <span>B) -1 to 0</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q5" value="c">
+                        <span>C) -1 to 1</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q5" value="d">
+                        <span>D) 0 to 100</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="5">
+                <div class="question-number">Question 6 of 10</div>
+                <div class="question-text">When should you use a moving average forecasting method?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q6" value="a">
+                        <span>A) When there's a clear trend</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q6" value="b">
+                        <span>B) When demand is stable with no trend</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q6" value="c">
+                        <span>C) When there's strong seasonality</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q6" value="d">
+                        <span>D) When you have limited data</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="6">
+                <div class="question-number">Question 7 of 10</div>
+                <div class="question-text">What does the coefficient of determination (r²) represent?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q7" value="a">
+                        <span>A) The correlation coefficient squared</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q7" value="b">
+                        <span>B) The proportion of variation explained</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q7" value="c">
+                        <span>C) The slope of the regression line</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q7" value="d">
+                        <span>D) The y-intercept</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="7">
+                <div class="question-number">Question 8 of 10</div>
+                <div class="question-text">In seasonal forecasting, what is a seasonal factor?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q8" value="a">
+                        <span>A) The average demand for all seasons</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q8" value="b">
+                        <span>B) The ratio of seasonal demand to average demand</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q8" value="c">
+                        <span>C) The total annual demand</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q8" value="d">
+                        <span>D) The forecast error</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="8">
+                <div class="question-number">Question 9 of 10</div>
+                <div class="question-text">What is MAPE and why is it useful?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q9" value="a">
+                        <span>A) Mean Absolute Percent Error - allows comparison across different demand levels</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q9" value="b">
+                        <span>B) Maximum Absolute Percent Error - shows the worst case scenario</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q9" value="c">
+                        <span>C) Mean Average Percent Error - calculates average percentage</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q9" value="d">
+                        <span>D) Maximum Average Percent Error - shows maximum percentage</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="9">
+                <div class="question-number">Question 10 of 10</div>
+                <div class="question-text">What is the relationship between α and n in exponential smoothing vs. moving averages?</div>
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="q10" value="a">
+                        <span>A) α = n / 2</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q10" value="b">
+                        <span>B) α = 2 / (n + 1)</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q10" value="c">
+                        <span>C) α = n + 1</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="q10" value="d">
+                        <span>D) α = 2n</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" onclick="previousQuestion()" id="prevBtn" disabled>← Previous</button>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <button class="btn" onclick="nextQuestion()" id="nextBtn">Next →</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn submit" onclick="submitQuiz()" id="submitBtn" disabled>Submit Quiz</button>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="score-circle" id="scoreCircle">0%</div>
+            <h2 id="scoreText">Quiz Complete!</h2>
+            <div class="feedback" id="feedback"></div>
+            <div class="question-review" id="questionReview"></div>
+            <button class="btn" onclick="restartQuiz()">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let answers = {};
+        let timeLeft = 600; // 10 minutes in seconds
+        let timerInterval;
+        
+        const questions = [
+            { 
+                correct: 'b', 
+                explanation: 'Forecasting helps predict future demand, enabling better planning for inventory, production, staffing, and resource allocation.',
+                correctAnswerText: 'To predict future demand for planning',
+                whyCorrect: 'While reducing costs and increasing sales are benefits of good forecasting, the PRIMARY purpose is to predict future demand to enable better planning across all supply chain functions.'
+            },
+            { 
+                correct: 'a', 
+                explanation: 'Y = a + bX is the standard form where Y is the dependent variable, X is independent, a is y-intercept, and b is slope.',
+                correctAnswerText: 'Y = a + bX',
+                whyCorrect: 'This is the standard linear regression form where Y (dependent) = a (y-intercept) + b (slope) × X (independent variable).'
+            },
+            { 
+                correct: 'a', 
+                explanation: 'MAD = Mean Absolute Deviation, which measures the average of absolute forecast errors.',
+                correctAnswerText: 'Mean Absolute Deviation',
+                whyCorrect: 'MAD stands for Mean Absolute Deviation - it calculates the average of absolute differences between actual and forecasted values.'
+            },
+            { 
+                correct: 'b', 
+                explanation: 'α (alpha) is the smoothing constant that determines how much weight to give recent data vs. historical data.',
+                correctAnswerText: 'The smoothing constant',
+                whyCorrect: 'Alpha (α) is the smoothing constant in exponential smoothing that controls how much weight is given to recent data versus historical data.'
+            },
+            { 
+                correct: 'c', 
+                explanation: 'The correlation coefficient ranges from -1 (perfect negative) to +1 (perfect positive).',
+                correctAnswerText: '-1 to 1',
+                whyCorrect: 'The correlation coefficient (r) ranges from -1 (perfect negative correlation) to +1 (perfect positive correlation), with 0 indicating no correlation.'
+            },
+            { 
+                correct: 'b', 
+                explanation: 'Moving averages work best for stable demand patterns with no clear trend or seasonality.',
+                correctAnswerText: 'When demand is stable with no trend',
+                whyCorrect: 'Moving averages smooth out random fluctuations and work best when demand is relatively stable without clear trends or seasonal patterns.'
+            },
+            { 
+                correct: 'b', 
+                explanation: 'r² represents the proportion of variation in the dependent variable explained by the regression model.',
+                correctAnswerText: 'The proportion of variation explained',
+                whyCorrect: 'r² (coefficient of determination) shows what percentage of the variation in the dependent variable is explained by the independent variable(s).'
+            },
+            { 
+                correct: 'b', 
+                explanation: 'A seasonal factor is the ratio of actual seasonal demand to the average demand per season.',
+                correctAnswerText: 'The ratio of seasonal demand to average demand',
+                whyCorrect: 'Seasonal factors compare actual seasonal demand to the overall average demand, showing how much above or below average each season is.'
+            },
+            { 
+                correct: 'a', 
+                explanation: 'MAPE = Mean Absolute Percent Error, which allows comparison of forecast accuracy across different demand levels.',
+                correctAnswerText: 'Mean Absolute Percent Error - allows comparison across different demand levels',
+                whyCorrect: 'MAPE converts errors to percentages, making it possible to compare forecast accuracy across products with very different demand levels.'
+            },
+            { 
+                correct: 'b', 
+                explanation: 'The approximate relationship is α = 2/(n+1), where n is the number of periods in moving average.',
+                correctAnswerText: 'α = 2 / (n + 1)',
+                whyCorrect: 'This formula provides an approximate equivalence between exponential smoothing (α) and moving averages (n periods) for similar responsiveness.'
+            }
+        ];
+        
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                
+                if (timeLeft <= 0) {
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timer = document.getElementById('timer');
+            
+            timer.textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 60) {
+                timer.classList.add('warning');
+            }
+        }
+        
+        function selectAnswer(questionNum, value) {
+            answers[questionNum] = value;
+            
+            // Update visual state
+            const questionCard = document.querySelector(`[data-question="${questionNum}"]`);
+            const options = questionCard.querySelectorAll('.option');
+            
+            options.forEach(option => {
+                option.classList.remove('selected');
+                if (option.querySelector('input').value === value) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            questionCard.classList.add('completed');
+            updateProgress();
+        }
+        
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+        }
+        
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        }
+        
+        function showQuestion(index) {
+            const questionCards = document.querySelectorAll('.question-card');
+            questionCards.forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('active');
+                    card.classList.remove('completed');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            updateControls();
+        }
+        
+        function updateControls() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.disabled = currentQuestion === questions.length - 1;
+            
+            const completedQuestions = Object.keys(answers).length;
+            submitBtn.disabled = completedQuestions < questions.length;
+        }
+        
+        function updateProgress() {
+            const completedQuestions = Object.keys(answers).length;
+            const progress = (completedQuestions / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            
+            let correct = 0;
+            const review = [];
+            
+            questions.forEach((question, index) => {
+                const userAnswer = answers[index];
+                const isCorrect = userAnswer === question.correct;
+                
+                if (isCorrect) correct++;
+                
+                review.push({
+                    question: index + 1,
+                    userAnswer: userAnswer,
+                    correctAnswer: question.correct,
+                    isCorrect: isCorrect,
+                    explanation: question.explanation
+                });
+            });
+            
+            const score = Math.round((correct / questions.length) * 100);
+            
+            // Show results
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('results').classList.add('show');
+            
+            // Update score display
+            document.getElementById('scoreCircle').textContent = score + '%';
+            document.getElementById('scoreText').textContent = getScoreMessage(score);
+            
+            // Update feedback
+            document.getElementById('feedback').innerHTML = `
+                <h3>Quiz Results</h3>
+                <p><strong>Score:</strong> ${correct}/${questions.length} (${score}%)</p>
+                <p><strong>Time Remaining:</strong> ${Math.floor(timeLeft/60)}:${(timeLeft%60).toString().padStart(2, '0')}</p>
+                <p><strong>Performance:</strong> ${getPerformanceFeedback(score)}</p>
+                <p><strong>Scroll down to see detailed review of each question</strong></p>
+            `;
+            
+            // Show question review with full question text
+            const reviewHtml = review.map(item => {
+                const question = questions[item.question - 1];
+                
+                // Get the question card from DOM to extract options
+                const questionCard = document.querySelector(`[data-question="${item.question - 1}"]`);
+                const questionText = questionCard.querySelector('.question-text').textContent;
+                const options = questionCard.querySelectorAll('.option span');
+                
+                // Create options array from DOM
+                const optionsArray = Array.from(options).map(span => span.textContent.trim());
+                
+                const userAnswerText = item.userAnswer ? optionsArray[item.userAnswer.charCodeAt(0) - 97] : 'Not answered';
+                const correctAnswerText = optionsArray[item.correctAnswer.charCodeAt(0) - 97];
+                
+                return `
+                    <div class="review-item ${item.isCorrect ? 'correct' : 'incorrect'}">
+                        <h4>Question ${item.question} ${item.isCorrect ? '✅' : '❌'}</h4>
+                        <div class="question-text">
+                            <p><strong>Question:</strong> ${questionText}</p>
+                        </div>
+                        <div class="answer-comparison">
+                            <div class="answer-row">
+                                <span class="answer-label">Your Answer:</span>
+                                <span class="answer-value ${item.isCorrect ? 'correct' : 'incorrect'}">
+                                    ${item.userAnswer ? item.userAnswer.toUpperCase() + '. ' + userAnswerText : 'Not answered'}
+                                </span>
+                            </div>
+                            <div class="answer-row">
+                                <span class="answer-label">Correct Answer:</span>
+                                <span class="answer-value correct">
+                                    ${item.correctAnswer.toUpperCase() + '. ' + correctAnswerText}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="explanation">
+                            <p><strong>Why This is Correct:</strong> ${question.whyCorrect}</p>
+                            <p><strong>Key Concept:</strong> ${item.explanation}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('questionReview').innerHTML = reviewHtml;
+            
+            // Scroll to the question review section
+            setTimeout(() => {
+                document.getElementById('questionReview').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 500);
+        }
+        
+        function getScoreMessage(score) {
+            if (score >= 90) return 'Outstanding! 🌟';
+            if (score >= 80) return 'Excellent! 🎉';
+            if (score >= 70) return 'Good Job! 👍';
+            if (score >= 60) return 'Not Bad! 📚';
+            return 'Keep Studying! 💪';
+        }
+        
+        function getPerformanceFeedback(score) {
+            if (score >= 90) return 'You have mastered forecasting concepts!';
+            if (score >= 80) return 'You have a strong understanding of forecasting.';
+            if (score >= 70) return 'You have a good grasp of forecasting basics.';
+            if (score >= 60) return 'You understand some concepts but need more practice.';
+            return 'Review the material and try again.';
+        }
+        
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = {};
+            timeLeft = 600;
+            
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            // Reset all question cards
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.remove('active', 'completed');
+                card.querySelectorAll('.option').forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    option.querySelector('input').checked = false;
+                });
+            });
+            
+            // Reset timer
+            document.getElementById('timer').classList.remove('warning');
+            
+            showQuestion(0);
+            updateControls();
+            updateProgress();
+            startTimer();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to radio buttons
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const questionNum = parseInt(this.closest('.question-card').dataset.question);
+                    selectAnswer(questionNum, this.value);
+                });
+            });
+            
+            showQuestion(0);
+            updateControls();
+            startTimer();
+        });
+    </script>
+</body>
+</html>
