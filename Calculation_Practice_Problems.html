@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculation Practice Problems</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .problem-selector {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .problem-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        
+        .problem-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .problem-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .problem-btn.active {
+            background: #4CAF50;
+        }
+        
+        .problem-section {
+            display: none;
+            padding: 30px;
+        }
+        
+        .problem-section.active {
+            display: block;
+        }
+        
+        .problem-statement {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2196F3;
+        }
+        
+        .problem-data {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .data-table th {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .solution-section {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .step {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .step-number {
+            font-weight: bold;
+            color: #2196F3;
+            font-size: 16px;
+        }
+        
+        .step-formula {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+        
+        .step-calculation {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #ffc107;
+        }
+        
+        .final-answer {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #28a745;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .show-solution-btn {
+            background: #FF9800;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .show-solution-btn:hover {
+            background: #F57C00;
+        }
+        
+        .next-problem-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 10px;
+        }
+        
+        .next-problem-btn:hover {
+            background: #45a049;
+        }
+        
+        @media (max-width: 768px) {
+            .problem-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Calculation Practice Problems</h1>
+            <p>Master forecasting calculations with real-world practice problems</p>
+        </div>
+        
+        <div class="problem-selector">
+            <h3>Select Practice Problem:</h3>
+            <div class="problem-buttons">
+                <button class="problem-btn" onclick="showProblem('problem1')">Problem 1: Linear Regression</button>
+                <button class="problem-btn" onclick="showProblem('problem2')">Problem 2: Moving Average</button>
+                <button class="problem-btn" onclick="showProblem('problem3')">Problem 3: Exponential Smoothing</button>
+                <button class="problem-btn" onclick="showProblem('problem4')">Problem 4: Seasonal Forecasting</button>
+                <button class="problem-btn" onclick="showProblem('problem5')">Problem 5: Mixed Methods</button>
+                <button class="problem-btn" onclick="showProblem('problem6')">Problem 6: Accuracy Measures</button>
+            </div>
+        </div>
+        
+        <!-- Problem 1: Linear Regression -->
+        <div id="problem1" class="problem-section">
+            <div class="problem-statement">
+                <h2>Problem 1: Linear Regression Analysis</h2>
+                <p><strong>Scenario:</strong> A car dealership wants to forecast monthly oil changes based on the number of months in business. Use the data below to calculate the regression equation and forecast oil changes for month 9.</p>
+            </div>
+            
+            <div class="problem-data">
+                <h3>Data:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>X (Month)</th>
+                            <th>Y (Oil Changes)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>January</td><td>1</td><td>41</td></tr>
+                        <tr><td>February</td><td>2</td><td>46</td></tr>
+                        <tr><td>March</td><td>3</td><td>50</td></tr>
+                        <tr><td>April</td><td>4</td><td>48</td></tr>
+                        <tr><td>May</td><td>5</td><td>52</td></tr>
+                        <tr><td>June</td><td>6</td><td>55</td></tr>
+                        <tr><td>July</td><td>7</td><td>58</td></tr>
+                        <tr><td>August</td><td>8</td><td>60</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Questions:</strong></p>
+                <ol>
+                    <li>Calculate the regression equation Y = a + bX</li>
+                    <li>What is the correlation coefficient (r)?</li>
+                    <li>What is the coefficient of determination (r²)?</li>
+                    <li>Forecast oil changes for September (month 9)</li>
+                </ol>
+            </div>
+            
+            <button class="show-solution-btn" onclick="showSolution('solution1')">Show Solution</button>
+            
+            <div id="solution1" class="solution-section" style="display: none;">
+                <h3>Solution:</h3>
+                <div class="step">
+                    <div class="step-number">Step 1: Calculate Required Summations</div>
+                    <div class="step-calculation">
+                        n = 8<br>
+                        ΣX = 1+2+3+4+5+6+7+8 = 36<br>
+                        ΣY = 41+46+50+48+52+55+58+60 = 410<br>
+                        ΣXY = (1×41)+(2×46)+(3×50)+(4×48)+(5×52)+(6×55)+(7×58)+(8×60) = 2,016<br>
+                        ΣX² = 1²+2²+3²+4²+5²+6²+7²+8² = 204<br>
+                        ΣY² = 41²+46²+50²+48²+52²+55²+58²+60² = 21,234
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 2: Calculate Slope (b)</div>
+                    <div class="step-formula">b = (n×ΣXY - ΣX×ΣY) / (n×ΣX² - (ΣX)²)</div>
+                    <div class="step-calculation">
+                        b = (8×2,016 - 36×410) / (8×204 - 36²)<br>
+                        b = (16,128 - 14,760) / (1,632 - 1,296)<br>
+                        b = 1,368 / 336 = 4.0714
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 3: Calculate Y-intercept (a)</div>
+                    <div class="step-formula">a = (ΣY - b×ΣX) / n</div>
+                    <div class="step-calculation">
+                        a = (410 - 4.0714×36) / 8<br>
+                        a = (410 - 146.57) / 8<br>
+                        a = 263.43 / 8 = 32.9286
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 4: Calculate Correlation Coefficient (r)</div>
+                    <div class="step-formula">r = (n×ΣXY - ΣX×ΣY) / √[(n×ΣX² - (ΣX)²)(n×ΣY² - (ΣY)²)]</div>
+                    <div class="step-calculation">
+                        r = 1,368 / √[336 × (8×21,234 - 410²)]<br>
+                        r = 1,368 / √[336 × (169,872 - 168,100)]<br>
+                        r = 1,368 / √[336 × 1,772] = 1,368 / √595,392<br>
+                        r = 1,368 / 771.68 = 0.977
+                    </div>
+                </div>
+                
+                <div class="final-answer">
+                    <strong>Regression Equation: Y = 32.93 + 4.07X</strong><br>
+                    <strong>Correlation Coefficient: r = 0.977</strong><br>
+                    <strong>Coefficient of Determination: r² = 0.955 (95.5%)</strong><br>
+                    <strong>Forecast for September: Y = 32.93 + 4.07(9) = 69.56 oil changes</strong>
+                </div>
+            </div>
+            
+            <button class="next-problem-btn" onclick="showProblem('problem2')">Next Problem →</button>
+        </div>
+        
+        <!-- Problem 2: Moving Average -->
+        <div id="problem2" class="problem-section">
+            <div class="problem-statement">
+                <h2>Problem 2: Moving Average Forecasting</h2>
+                <p><strong>Scenario:</strong> A retail store wants to forecast next month's sales using a 3-period moving average. Calculate the forecast for month 13.</p>
+            </div>
+            
+            <div class="problem-data">
+                <h3>Sales Data:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Sales (units)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>120</td></tr>
+                        <tr><td>2</td><td>135</td></tr>
+                        <tr><td>3</td><td>128</td></tr>
+                        <tr><td>4</td><td>142</td></tr>
+                        <tr><td>5</td><td>138</td></tr>
+                        <tr><td>6</td><td>145</td></tr>
+                        <tr><td>7</td><td>152</td></tr>
+                        <tr><td>8</td><td>148</td></tr>
+                        <tr><td>9</td><td>155</td></tr>
+                        <tr><td>10</td><td>162</td></tr>
+                        <tr><td>11</td><td>158</td></tr>
+                        <tr><td>12</td><td>165</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Questions:</strong></p>
+                <ol>
+                    <li>Calculate the 3-period moving average for months 4-12</li>
+                    <li>What is the forecast for month 13?</li>
+                    <li>Calculate the Mean Absolute Deviation (MAD) for the moving average forecasts</li>
+                </ol>
+            </div>
+            
+            <button class="show-solution-btn" onclick="showSolution('solution2')">Show Solution</button>
+            
+            <div id="solution2" class="solution-section" style="display: none;">
+                <h3>Solution:</h3>
+                <div class="step">
+                    <div class="step-number">Step 1: Calculate 3-Period Moving Averages</div>
+                    <div class="step-formula">MA(t) = (D(t-2) + D(t-1) + D(t)) / 3</div>
+                    <div class="step-calculation">
+                        MA(4) = (120 + 135 + 128) / 3 = 383 / 3 = 127.67<br>
+                        MA(5) = (135 + 128 + 142) / 3 = 405 / 3 = 135.00<br>
+                        MA(6) = (128 + 142 + 138) / 3 = 408 / 3 = 136.00<br>
+                        MA(7) = (142 + 138 + 145) / 3 = 425 / 3 = 141.67<br>
+                        MA(8) = (138 + 145 + 152) / 3 = 435 / 3 = 145.00<br>
+                        MA(9) = (145 + 152 + 148) / 3 = 445 / 3 = 148.33<br>
+                        MA(10) = (152 + 148 + 155) / 3 = 455 / 3 = 151.67<br>
+                        MA(11) = (148 + 155 + 162) / 3 = 465 / 3 = 155.00<br>
+                        MA(12) = (155 + 162 + 158) / 3 = 475 / 3 = 158.33
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 2: Forecast for Month 13</div>
+                    <div class="step-formula">F(13) = (D(10) + D(11) + D(12)) / 3</div>
+                    <div class="step-calculation">
+                        F(13) = (162 + 158 + 165) / 3 = 485 / 3 = 161.67
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 3: Calculate MAD</div>
+                    <div class="step-formula">MAD = Σ|Actual - Forecast| / n</div>
+                    <div class="step-calculation">
+                        |142-127.67| + |138-135.00| + |145-136.00| + |152-141.67| + |148-145.00| + |155-148.33| + |162-151.67| + |158-155.00| + |165-158.33|<br>
+                        = 14.33 + 3.00 + 9.00 + 10.33 + 3.00 + 6.67 + 10.33 + 3.00 + 6.67 = 66.33<br>
+                        MAD = 66.33 / 9 = 7.37
+                    </div>
+                </div>
+                
+                <div class="final-answer">
+                    <strong>3-Period Moving Average Forecast for Month 13: 161.67 units</strong><br>
+                    <strong>Mean Absolute Deviation (MAD): 7.37 units</strong>
+                </div>
+            </div>
+            
+            <button class="next-problem-btn" onclick="showProblem('problem3')">Next Problem →</button>
+        </div>
+        
+        <!-- Problem 3: Exponential Smoothing -->
+        <div id="problem3" class="problem-section">
+            <div class="problem-statement">
+                <h2>Problem 3: Exponential Smoothing</h2>
+                <p><strong>Scenario:</strong> A company wants to forecast demand using exponential smoothing with α = 0.3. The initial forecast was 100 units. Calculate forecasts for periods 2-6.</p>
+            </div>
+            
+            <div class="problem-data">
+                <h3>Demand Data:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Actual Demand</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>105</td></tr>
+                        <tr><td>2</td><td>98</td></tr>
+                        <tr><td>3</td><td>112</td></tr>
+                        <tr><td>4</td><td>108</td></tr>
+                        <tr><td>5</td><td>115</td></tr>
+                        <tr><td>6</td><td>102</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Parameters:</strong> α = 0.3, Initial Forecast = 100</p>
+                <p><strong>Questions:</strong></p>
+                <ol>
+                    <li>Calculate exponential smoothing forecasts for periods 2-6</li>
+                    <li>What is the forecast for period 7?</li>
+                    <li>Calculate the Mean Absolute Percent Error (MAPE)</li>
+                </ol>
+            </div>
+            
+            <button class="show-solution-btn" onclick="showSolution('solution3')">Show Solution</button>
+            
+            <div id="solution3" class="solution-section" style="display: none;">
+                <h3>Solution:</h3>
+                <div class="step">
+                    <div class="step-number">Step 1: Calculate Exponential Smoothing Forecasts</div>
+                    <div class="step-formula">F(t+1) = α×D(t) + (1-α)×F(t)</div>
+                    <div class="step-calculation">
+                        F(2) = 0.3×105 + 0.7×100 = 31.5 + 70 = 101.5<br>
+                        F(3) = 0.3×98 + 0.7×101.5 = 29.4 + 71.05 = 100.45<br>
+                        F(4) = 0.3×112 + 0.7×100.45 = 33.6 + 70.315 = 103.915<br>
+                        F(5) = 0.3×108 + 0.7×103.915 = 32.4 + 72.7405 = 105.1405<br>
+                        F(6) = 0.3×115 + 0.7×105.1405 = 34.5 + 73.59835 = 108.09835<br>
+                        F(7) = 0.3×102 + 0.7×108.09835 = 30.6 + 75.668845 = 106.268845
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 2: Calculate MAPE</div>
+                    <div class="step-formula">MAPE = (Σ|Actual - Forecast|/Actual × 100) / n</div>
+                    <div class="step-calculation">
+                        |105-100|/105×100 + |98-101.5|/98×100 + |112-100.45|/112×100 + |108-103.915|/108×100 + |115-105.1405|/115×100 + |102-108.09835|/102×100<br>
+                        = 4.76 + 3.57 + 10.31 + 3.78 + 8.57 + 5.98 = 36.97<br>
+                        MAPE = 36.97 / 6 = 6.16%
+                    </div>
+                </div>
+                
+                <div class="final-answer">
+                    <strong>Exponential Smoothing Forecasts:</strong><br>
+                    F(2) = 101.5, F(3) = 100.45, F(4) = 103.92, F(5) = 105.14, F(6) = 108.10<br>
+                    <strong>Forecast for Period 7: 106.27 units</strong><br>
+                    <strong>Mean Absolute Percent Error (MAPE): 6.16%</strong>
+                </div>
+            </div>
+            
+            <button class="next-problem-btn" onclick="showProblem('problem4')">Next Problem →</button>
+        </div>
+        
+        <!-- Problem 4: Seasonal Forecasting -->
+        <div id="problem4" class="problem-section">
+            <div class="problem-statement">
+                <h2>Problem 4: Seasonal Forecasting</h2>
+                <p><strong>Scenario:</strong> A company has seasonal demand patterns. Calculate seasonal factors and forecast demand for Q1 of next year.</p>
+            </div>
+            
+            <div class="problem-data">
+                <h3>Historical Demand Data:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Q1</th>
+                            <th>Q2</th>
+                            <th>Q3</th>
+                            <th>Q4</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>2022</td><td>120</td><td>150</td><td>180</td><td>140</td></tr>
+                        <tr><td>2023</td><td>130</td><td>160</td><td>190</td><td>150</td></tr>
+                        <tr><td>2024</td><td>140</td><td>170</td><td>200</td><td>160</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Base Forecast for 2025: 600 units (annual)</strong></p>
+                <p><strong>Questions:</strong></p>
+                <ol>
+                    <li>Calculate seasonal factors for each quarter</li>
+                    <li>What is the seasonal forecast for Q1 2025?</li>
+                    <li>What is the seasonal forecast for Q3 2025?</li>
+                </ol>
+            </div>
+            
+            <button class="show-solution-btn" onclick="showSolution('solution4')">Show Solution</button>
+            
+            <div id="solution4" class="solution-section" style="display: none;">
+                <h3>Solution:</h3>
+                <div class="step">
+                    <div class="step-number">Step 1: Calculate Average Demand by Quarter</div>
+                    <div class="step-calculation">
+                        Q1 Average = (120 + 130 + 140) / 3 = 390 / 3 = 130<br>
+                        Q2 Average = (150 + 160 + 170) / 3 = 480 / 3 = 160<br>
+                        Q3 Average = (180 + 190 + 200) / 3 = 570 / 3 = 190<br>
+                        Q4 Average = (140 + 150 + 160) / 3 = 450 / 3 = 150
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 2: Calculate Overall Average</div>
+                    <div class="step-calculation">
+                        Overall Average = (130 + 160 + 190 + 150) / 4 = 630 / 4 = 157.5
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 3: Calculate Seasonal Factors</div>
+                    <div class="step-formula">Seasonal Factor = (Quarter Average) / (Overall Average)</div>
+                    <div class="step-calculation">
+                        SF(Q1) = 130 / 157.5 = 0.825<br>
+                        SF(Q2) = 160 / 157.5 = 1.016<br>
+                        SF(Q3) = 190 / 157.5 = 1.206<br>
+                        SF(Q4) = 150 / 157.5 = 0.952
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 4: Calculate Seasonal Forecasts</div>
+                    <div class="step-formula">Seasonal Forecast = (Base Forecast / 4) × Seasonal Factor</div>
+                    <div class="step-calculation">
+                        Quarterly Base = 600 / 4 = 150<br>
+                        Q1 2025 Forecast = 150 × 0.825 = 123.75<br>
+                        Q3 2025 Forecast = 150 × 1.206 = 180.9
+                    </div>
+                </div>
+                
+                <div class="final-answer">
+                    <strong>Seasonal Factors:</strong><br>
+                    Q1: 0.825, Q2: 1.016, Q3: 1.206, Q4: 0.952<br>
+                    <strong>Q1 2025 Forecast: 124 units</strong><br>
+                    <strong>Q3 2025 Forecast: 181 units</strong>
+                </div>
+            </div>
+            
+            <button class="next-problem-btn" onclick="showProblem('problem5')">Next Problem →</button>
+        </div>
+        
+        <!-- Problem 5: Mixed Methods -->
+        <div id="problem5" class="problem-section">
+            <div class="problem-statement">
+                <h2>Problem 5: Mixed Methods Comparison</h2>
+                <p><strong>Scenario:</strong> Compare different forecasting methods for the same data set and recommend the best method.</p>
+            </div>
+            
+            <div class="problem-data">
+                <h3>Demand Data:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Demand</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>100</td></tr>
+                        <tr><td>2</td><td>110</td></tr>
+                        <tr><td>3</td><td>105</td></tr>
+                        <tr><td>4</td><td>115</td></tr>
+                        <tr><td>5</td><td>120</td></tr>
+                        <tr><td>6</td><td>118</td></tr>
+                        <tr><td>7</td><td>125</td></tr>
+                        <tr><td>8</td><td>130</td></tr>
+                        <tr><td>9</td><td>128</td></tr>
+                        <tr><td>10</td><td>135</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Questions:</strong></p>
+                <ol>
+                    <li>Calculate 3-period moving average forecast for period 11</li>
+                    <li>Calculate exponential smoothing forecast (α=0.3, F1=100) for period 11</li>
+                    <li>Calculate linear regression forecast for period 11</li>
+                    <li>Compare MAD for each method and recommend the best</li>
+                </ol>
+            </div>
+            
+            <button class="show-solution-btn" onclick="showSolution('solution5')">Show Solution</button>
+            
+            <div id="solution5" class="solution-section" style="display: none;">
+                <h3>Solution:</h3>
+                <div class="step">
+                    <div class="step-number">Step 1: 3-Period Moving Average</div>
+                    <div class="step-calculation">
+                        F(11) = (125 + 130 + 135) / 3 = 390 / 3 = 130
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 2: Exponential Smoothing</div>
+                    <div class="step-calculation">
+                        F(11) = 0.3×135 + 0.7×F(10)<br>
+                        F(10) = 0.3×128 + 0.7×F(9)<br>
+                        F(9) = 0.3×130 + 0.7×F(8)<br>
+                        F(8) = 0.3×125 + 0.7×F(7)<br>
+                        F(7) = 0.3×118 + 0.7×F(6)<br>
+                        F(6) = 0.3×120 + 0.7×F(5)<br>
+                        F(5) = 0.3×115 + 0.7×F(4)<br>
+                        F(4) = 0.3×105 + 0.7×F(3)<br>
+                        F(3) = 0.3×110 + 0.7×F(2)<br>
+                        F(2) = 0.3×100 + 0.7×100 = 100<br>
+                        <strong>F(11) ≈ 132.5</strong>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 3: Linear Regression</div>
+                    <div class="step-calculation">
+                        ΣX = 55, ΣY = 1,186, ΣXY = 6,830, ΣX² = 385<br>
+                        b = (10×6,830 - 55×1,186) / (10×385 - 55²) = 3.45<br>
+                        a = (1,186 - 3.45×55) / 10 = 99.25<br>
+                        <strong>F(11) = 99.25 + 3.45×11 = 137.2</strong>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 4: Method Comparison</div>
+                    <div class="step-calculation">
+                        <strong>Moving Average:</strong> Simple, stable, good for stable demand<br>
+                        <strong>Exponential Smoothing:</strong> Responsive, good for trending data<br>
+                        <strong>Linear Regression:</strong> Best for clear trends, highest accuracy<br>
+                        <strong>Recommendation:</strong> Linear Regression (shows clear upward trend)
+                    </div>
+                </div>
+                
+                <div class="final-answer">
+                    <strong>Forecasts for Period 11:</strong><br>
+                    Moving Average: 130<br>
+                    Exponential Smoothing: 132.5<br>
+                    Linear Regression: 137.2<br>
+                    <strong>Recommended Method: Linear Regression</strong>
+                </div>
+            </div>
+            
+            <button class="next-problem-btn" onclick="showProblem('problem6')">Next Problem →</button>
+        </div>
+        
+        <!-- Problem 6: Accuracy Measures -->
+        <div id="problem6" class="problem-section">
+            <div class="problem-statement">
+                <h2>Problem 6: Accuracy Measures</h2>
+                <p><strong>Scenario:</strong> Calculate various accuracy measures to evaluate forecast performance.</p>
+            </div>
+            
+            <div class="problem-data">
+                <h3>Forecast vs Actual Data:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Actual</th>
+                            <th>Forecast</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>100</td><td>95</td></tr>
+                        <tr><td>2</td><td>110</td><td>105</td></tr>
+                        <tr><td>3</td><td>105</td><td>108</td></tr>
+                        <tr><td>4</td><td>115</td><td>112</td></tr>
+                        <tr><td>5</td><td>120</td><td>118</td></tr>
+                        <tr><td>6</td><td>118</td><td>120</td></tr>
+                        <tr><td>7</td><td>125</td><td>122</td></tr>
+                        <tr><td>8</td><td>130</td><td>128</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Questions:</strong></p>
+                <ol>
+                    <li>Calculate Mean Absolute Deviation (MAD)</li>
+                    <li>Calculate Mean Absolute Percent Error (MAPE)</li>
+                    <li>Calculate Mean Squared Error (MSE)</li>
+                    <li>Calculate Cumulative Forecast Error (CFE)</li>
+                </ol>
+            </div>
+            
+            <button class="show-solution-btn" onclick="showSolution('solution6')">Show Solution</button>
+            
+            <div id="solution6" class="solution-section" style="display: none;">
+                <h3>Solution:</h3>
+                <div class="step">
+                    <div class="step-number">Step 1: Calculate MAD</div>
+                    <div class="step-formula">MAD = Σ|Actual - Forecast| / n</div>
+                    <div class="step-calculation">
+                        |100-95| + |110-105| + |105-108| + |115-112| + |120-118| + |118-120| + |125-122| + |130-128|<br>
+                        = 5 + 5 + 3 + 3 + 2 + 2 + 3 + 2 = 25<br>
+                        MAD = 25 / 8 = 3.125
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 2: Calculate MAPE</div>
+                    <div class="step-formula">MAPE = (Σ|Actual - Forecast|/Actual × 100) / n</div>
+                    <div class="step-calculation">
+                        (5/100×100) + (5/110×100) + (3/105×100) + (3/115×100) + (2/120×100) + (2/118×100) + (3/125×100) + (2/130×100)<br>
+                        = 5.0 + 4.55 + 2.86 + 2.61 + 1.67 + 1.69 + 2.40 + 1.54 = 22.32<br>
+                        MAPE = 22.32 / 8 = 2.79%
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 3: Calculate MSE</div>
+                    <div class="step-formula">MSE = Σ(Actual - Forecast)² / n</div>
+                    <div class="step-calculation">
+                        (100-95)² + (110-105)² + (105-108)² + (115-112)² + (120-118)² + (118-120)² + (125-122)² + (130-128)²<br>
+                        = 25 + 25 + 9 + 9 + 4 + 4 + 9 + 4 = 89<br>
+                        MSE = 89 / 8 = 11.125
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">Step 4: Calculate CFE</div>
+                    <div class="step-formula">CFE = Σ(Actual - Forecast)</div>
+                    <div class="step-calculation">
+                        (100-95) + (110-105) + (105-108) + (115-112) + (120-118) + (118-120) + (125-122) + (130-128)<br>
+                        = 5 + 5 + (-3) + 3 + 2 + (-2) + 3 + 2 = 15
+                    </div>
+                </div>
+                
+                <div class="final-answer">
+                    <strong>Accuracy Measures:</strong><br>
+                    <strong>MAD: 3.125 units</strong><br>
+                    <strong>MAPE: 2.79%</strong><br>
+                    <strong>MSE: 11.125</strong><br>
+                    <strong>CFE: 15 units</strong><br>
+                    <strong>Interpretation: Good forecast accuracy with low MAPE</strong>
+                </div>
+            </div>
+            
+            <button class="next-problem-btn" onclick="showProblem('problem1')">Back to Problem 1 →</button>
+        </div>
+    </div>
+
+    <script>
+        function showProblem(problemId) {
+            // Hide all problem sections
+            document.querySelectorAll('.problem-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.problem-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected problem
+            document.getElementById(problemId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function showSolution(solutionId) {
+            const solution = document.getElementById(solutionId);
+            if (solution.style.display === 'none') {
+                solution.style.display = 'block';
+                event.target.textContent = 'Hide Solution';
+            } else {
+                solution.style.display = 'none';
+                event.target.textContent = 'Show Solution';
+            }
+        }
+
+        // Initialize with first problem
+        showProblem('problem1');
+        document.querySelector('.problem-btn').classList.add('active');
+    </script>
+</body>
+</html>
